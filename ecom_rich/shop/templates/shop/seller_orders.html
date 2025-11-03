@@ -1,0 +1,166 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}Gestion des Commandes - E-Commerce{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-5 fade-in">
+        <div>
+            <h2 class="mb-1"><i class="fas fa-clipboard-list text-primary"></i> Gestion des Commandes</h2>
+            <p class="text-muted mb-0">Suivez et gérez les commandes de vos produits</p>
+        </div>
+        <a href="{% url 'seller_dashboard' %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i> Retour au Dashboard
+        </a>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="row mb-5 g-4">
+        <div class="col-md-4 fade-in" style="animation-delay: 0.1s">
+            <div class="stat-card hover-shadow" style="border-left: 4px solid #6366f1;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1 text-uppercase small fw-bold">Total commandes</p>
+                        <h2 class="mb-0 gradient-text">{{ total_orders }}</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-shopping-bag fa-3x" style="color: #6366f1; opacity: 0.2;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 fade-in" style="animation-delay: 0.2s">
+            <div class="stat-card hover-shadow" style="border-left: 4px solid #f59e0b;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1 text-uppercase small fw-bold">En attente</p>
+                        <h2 class="mb-0 text-warning">{{ pending_orders }}</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-clock fa-3x" style="color: #f59e0b; opacity: 0.2;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 fade-in" style="animation-delay: 0.3s">
+            <div class="stat-card hover-shadow" style="border-left: 4px solid #10b981;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1 text-uppercase small fw-bold">Livrées</p>
+                        <h2 class="mb-0 text-success">{{ completed_orders }}</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-check-circle fa-3x" style="color: #10b981; opacity: 0.2;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des commandes -->
+    <div class="card shadow-sm">
+        <div class="card-header" style="background: linear-gradient(135deg, #ff6b6b 0%, #ff8787 100%); color: white;">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i> Toutes les Commandes</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if orders %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th><i class="fas fa-hashtag"></i> N°</th>
+                                <th><i class="fas fa-user"></i> Client</th>
+                                <th><i class="fas fa-calendar"></i> Date</th>
+                                <th><i class="fas fa-info-circle"></i> Statut</th>
+                                <th><i class="fas fa-euro-sign"></i> Total</th>
+                                <th class="text-center"><i class="fas fa-cog"></i> Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr>
+                                <td><strong class="text-primary">#{{ order.id }}</strong></td>
+                                <td>
+                                    <i class="fas fa-user-circle text-muted me-1"></i>
+                                    {{ order.user.get_full_name|default:order.user.username }}
+                                </td>
+                                <td>
+                                    <i class="fas fa-calendar-alt text-muted me-1"></i>
+                                    {{ order.created_at|date:"d/m/Y H:i" }}
+                                </td>
+                                <td>
+                                    {% if order.status == 'pending' %}
+                                        <span class="badge" style="background: linear-gradient(135deg, #fed330 0%, #f7b731 100%);">
+                                            <i class="fas fa-clock me-1"></i> {{ order.get_status_display }}
+                                        </span>
+                                    {% elif order.status == 'confirmed' %}
+                                        <span class="badge" style="background: linear-gradient(135deg, #45aaf2 0%, #2d98da 100%);">
+                                            <i class="fas fa-check me-1"></i> {{ order.get_status_display }}
+                                        </span>
+                                    {% elif order.status == 'shipped' %}
+                                        <span class="badge" style="background: linear-gradient(135deg, #a55eea 0%, #8854d0 100%);">
+                                            <i class="fas fa-truck me-1"></i> {{ order.get_status_display }}
+                                        </span>
+                                    {% elif order.status == 'delivered' %}
+                                        <span class="badge" style="background: linear-gradient(135deg, #26de81 0%, #20bf6b 100%);">
+                                            <i class="fas fa-check-double me-1"></i> {{ order.get_status_display }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-times me-1"></i> {{ order.get_status_display }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong class="text-primary">{{ order.total_amount }} CFA</strong>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'seller_order_detail' order.id %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        
+                                        {% if order.status == 'pending' %}
+                                            <form method="post" action="{% url 'seller_order_update_status' order.id %}" class="d-inline quick-action-form" onsubmit="this.querySelector('button').disabled=true">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="return_to_list" value="true">
+                                                <button type="submit" name="status" value="confirmed" class="btn btn-sm btn-success" title="Confirmer la commande">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            </form>
+                                        {% elif order.status == 'confirmed' %}
+                                            <form method="post" action="{% url 'seller_order_update_status' order.id %}" class="d-inline quick-action-form" onsubmit="this.querySelector('button').disabled=true">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="return_to_list" value="true">
+                                                <button type="submit" name="status" value="shipped" class="btn btn-sm btn-info" title="Marquer comme expédiée">
+                                                    <i class="fas fa-truck"></i>
+                                                </button>
+                                            </form>
+                                        {% elif order.status == 'shipped' %}
+                                            <form method="post" action="{% url 'seller_order_update_status' order.id %}" class="d-inline quick-action-form" onsubmit="this.querySelector('button').disabled=true">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="return_to_list" value="true">
+                                                <button type="submit" name="status" value="delivered" class="btn btn-sm btn-success" title="Marquer comme livrée">
+                                                    <i class="fas fa-check-double"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state py-5">
+                    <i class="fas fa-inbox"></i>
+                    <h5 class="mt-3">Aucune commande pour le moment</h5>
+                    <p class="text-muted">Les commandes contenant vos produits apparaîtront ici.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

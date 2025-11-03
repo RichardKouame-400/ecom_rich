@@ -1,0 +1,142 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}Produits - E-Commerce{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Nos Produits</h2>
+    
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Rechercher</label>
+                            <input type="text" name="search" class="form-control" placeholder="Nom du produit..." value="{{ search_query|default:'' }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Catégorie</label>
+                            <select name="category" class="form-select">
+                                <option value="">Toutes les catégories</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}" {% if current_category == category.id %}selected{% endif %}>
+                                        {{ category.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Étiquette</label>
+                            <select name="tag" class="form-select">
+                                <option value="">Toutes les étiquettes</option>
+                                {% for tag in tags %}
+                                    <option value="{{ tag.id }}" {% if current_tag == tag.id %}selected{% endif %}>
+                                        {{ tag.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search"></i> Filtrer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products -->
+    {% if products %}
+        <div class="row">
+            {% for product in products %}
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="card h-100 shadow-sm hover-card">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <i class="fas fa-image fa-3x text-muted"></i>
+                        </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.name|truncatewords:5 }}</h5>
+                        <p class="card-text text-muted small">{{ product.description|truncatewords:10 }}</p>
+                        
+                        <!-- Étiquettes -->
+                        <div class="mb-2">
+                            {% for tag in product.tags.all %}
+                                {% if tag.name == 'Nouveau' %}
+                                    <span class="badge" style="background: linear-gradient(135deg, #ff6b6b 0%, #ff8787 100%);">
+                                        <i class="fas fa-sparkles me-1"></i>{{ tag.name }}
+                                    </span>
+                                {% elif tag.name == 'Promotion' %}
+                                    <span class="badge" style="background: linear-gradient(135deg, #fed330 0%, #f7b731 100%); color: #2d3436;">
+                                        <i class="fas fa-percent me-1"></i>{{ tag.name }}
+                                    </span>
+                                {% elif tag.name == 'Populaire' %}
+                                    <span class="badge" style="background: linear-gradient(135deg, #a55eea 0%, #8854d0 100%);">
+                                        <i class="fas fa-fire me-1"></i>{{ tag.name }}
+                                    </span>
+                                {% elif tag.name == 'Écologique' or tag.name == 'Ecologique' %}
+                                    <span class="badge" style="background: linear-gradient(135deg, #26de81 0%, #20bf6b 100%);">
+                                        <i class="fas fa-leaf me-1"></i>{{ tag.name }}
+                                    </span>
+                                {% elif tag.name == 'Premium' %}
+                                    <span class="badge" style="background: linear-gradient(135deg, #ff9f43 0%, #ff6348 100%);">
+                                        <i class="fas fa-crown me-1"></i>{{ tag.name }}
+                                    </span>
+                                {% elif tag.name == 'Soldes' %}
+                                    <span class="badge" style="background: linear-gradient(135deg, #fc5c65 0%, #eb3b5a 100%);">
+                                        <i class="fas fa-tag me-1"></i>{{ tag.name }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge" style="background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);">
+                                        <i class="fas fa-tag me-1"></i>{{ tag.name }}
+                                    </span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        
+                        <p class="card-text">
+                            <strong class="text-primary fs-5">{{ product.price }} CFA</strong>
+                        </p>
+                        <p class="card-text small">
+                            <span class="badge bg-info">{{ product.category.name }}</span>
+                        </p>
+                        <p class="card-text small text-muted">
+                            <i class="fas fa-user"></i> {{ product.seller.username }}<br>
+                            <i class="fas fa-box"></i> Stock: {{ product.stock }}
+                        </p>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <a href="{% url 'product_detail' product.id %}" class="btn btn-primary btn-sm w-100">
+                            <i class="fas fa-eye"></i> Voir détails
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i> Aucun produit trouvé avec ces critères.
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.hover-card {
+    transition: all 0.3s;
+}
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+</style>
+{% endblock %}
+
+

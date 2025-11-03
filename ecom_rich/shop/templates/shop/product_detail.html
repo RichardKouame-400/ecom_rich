@@ -1,0 +1,143 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}{{ product.name }} - E-Commerce{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'product_list' %}">Produits</a></li>
+            <li class="breadcrumb-item active">{{ product.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Product Image -->
+        <div class="col-md-6">
+            {% if product.image %}
+                <img src="{{ product.image.url }}" class="img-fluid rounded shadow" alt="{{ product.name }}">
+            {% else %}
+                <div class="bg-light d-flex align-items-center justify-content-center rounded shadow" style="height: 400px;">
+                    <i class="fas fa-image fa-5x text-muted"></i>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Product Info -->
+        <div class="col-md-6">
+            <h1 class="mb-3">{{ product.name }}</h1>
+            
+            <div class="mb-3">
+                <span class="badge" style="background: linear-gradient(135deg, #45aaf2 0%, #2d98da 100%); font-size: 0.9rem;">
+                    <i class="fas fa-folder me-1"></i>{{ product.category.name }}
+                </span>
+                {% for tag in product.tags.all %}
+                    {% if tag.name == 'Nouveau' %}
+                        <span class="badge" style="background: linear-gradient(135deg, #ff6b6b 0%, #ff8787 100%); font-size: 0.9rem;">
+                            <i class="fas fa-sparkles me-1"></i>{{ tag.name }}
+                        </span>
+                    {% elif tag.name == 'Promotion' %}
+                        <span class="badge" style="background: linear-gradient(135deg, #fed330 0%, #f7b731 100%); color: #2d3436; font-size: 0.9rem;">
+                            <i class="fas fa-percent me-1"></i>{{ tag.name }}
+                        </span>
+                    {% elif tag.name == 'Populaire' %}
+                        <span class="badge" style="background: linear-gradient(135deg, #a55eea 0%, #8854d0 100%); font-size: 0.9rem;">
+                            <i class="fas fa-fire me-1"></i>{{ tag.name }}
+                        </span>
+                    {% elif tag.name == 'Écologique' or tag.name == 'Ecologique' %}
+                        <span class="badge" style="background: linear-gradient(135deg, #26de81 0%, #20bf6b 100%); font-size: 0.9rem;">
+                            <i class="fas fa-leaf me-1"></i>{{ tag.name }}
+                        </span>
+                    {% elif tag.name == 'Premium' %}
+                        <span class="badge" style="background: linear-gradient(135deg, #ff9f43 0%, #ff6348 100%); font-size: 0.9rem;">
+                            <i class="fas fa-crown me-1"></i>{{ tag.name }}
+                        </span>
+                    {% elif tag.name == 'Soldes' %}
+                        <span class="badge" style="background: linear-gradient(135deg, #fc5c65 0%, #eb3b5a 100%); font-size: 0.9rem;">
+                            <i class="fas fa-tag me-1"></i>{{ tag.name }}
+                        </span>
+                    {% else %}
+                        <span class="badge" style="background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%); font-size: 0.9rem;">
+                            <i class="fas fa-tag me-1"></i>{{ tag.name }}
+                        </span>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <h2 class="text-primary mb-3">{{ product.price }} CFA</h2>
+
+            <p class="lead">{{ product.description }}</p>
+
+            <div class="mb-3">
+                <p class="mb-1">
+                    <strong><i class="fas fa-user"></i> Vendeur:</strong> {{ product.seller.username }}
+                </p>
+                <p class="mb-1">
+                    <strong><i class="fas fa-box"></i> Stock disponible:</strong> 
+                    {% if product.stock > 0 %}
+                        <span class="text-success">{{ product.stock }} unités</span>
+                    {% else %}
+                        <span class="text-danger">Rupture de stock</span>
+                    {% endif %}
+                </p>
+            </div>
+
+            {% if user.is_authenticated and product.stock > 0 %}
+                <form method="post" action="{% url 'cart_add' product.id %}" class="mb-3">
+                    {% csrf_token %}
+                    <div class="row g-2">
+                        <div class="col-auto">
+                            <label class="form-label">Quantité:</label>
+                            <input type="number" name="quantity" class="form-control" value="1" min="1" max="{{ product.stock }}" style="width: 80px;">
+                        </div>
+                        <div class="col-auto d-flex align-items-end">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-cart-plus"></i> Ajouter au panier
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            {% elif not user.is_authenticated %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> 
+                    <a href="{% url 'login' %}?next={{ request.path }}">Connectez-vous</a> pour ajouter ce produit à votre panier.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Related Products -->
+    {% if related_products %}
+    <div class="mt-5">
+        <h3 class="mb-4">Produits similaires</h3>
+        <div class="row">
+            {% for related in related_products %}
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="card h-100 shadow-sm">
+                    {% if related.image %}
+                        <img src="{{ related.image.url }}" class="card-img-top" alt="{{ related.name }}" style="height: 150px; object-fit: cover;">
+                    {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 150px;">
+                            <i class="fas fa-image fa-2x text-muted"></i>
+                        </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h6 class="card-title">{{ related.name|truncatewords:5 }}</h6>
+                        <p class="card-text"><strong class="text-primary">{{ related.price }} CFA</strong></p>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <a href="{% url 'product_detail' related.id %}" class="btn btn-sm btn-outline-primary w-100">
+                            Voir détails
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+

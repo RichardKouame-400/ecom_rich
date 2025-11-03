@@ -1,0 +1,142 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}Tableau de bord vendeur - E-Commerce{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-5 fade-in">
+        <div>
+            <h2 class="mb-1"><i class="fas fa-store text-primary"></i> Mon Espace Vendeur</h2>
+            <p class="text-muted mb-0">Gérez vos produits et suivez vos performances</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'seller_orders' %}" class="btn btn-info btn-lg shine">
+                <i class="fas fa-clipboard-list"></i> Commandes
+            </a>
+            <a href="{% url 'product_create' %}" class="btn btn-success btn-lg shine">
+                <i class="fas fa-plus"></i> Ajouter un produit
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mb-5 g-4">
+        <div class="col-md-4 fade-in" style="animation-delay: 0.1s">
+            <div class="stat-card hover-shadow" style="border-left: 4px solid #6366f1;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1 text-uppercase small fw-bold">Total produits</p>
+                        <h2 class="mb-0 gradient-text">{{ total_products }}</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-box fa-3x" style="color: #6366f1; opacity: 0.2;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 fade-in" style="animation-delay: 0.2s">
+            <div class="stat-card hover-shadow" style="border-left: 4px solid #10b981;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1 text-uppercase small fw-bold">Produits actifs</p>
+                        <h2 class="mb-0 text-success">{{ active_products }}</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-check-circle fa-3x" style="color: #10b981; opacity: 0.2;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 fade-in" style="animation-delay: 0.3s">
+            <div class="stat-card hover-shadow" style="border-left: 4px solid #f59e0b;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1 text-uppercase small fw-bold">Produits inactifs</p>
+                        <h2 class="mb-0 text-warning">{{ total_products|add:"-"|add:active_products }}</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-pause-circle fa-3x" style="color: #f59e0b; opacity: 0.2;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products List -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Mes Produits</h5>
+        </div>
+        <div class="card-body">
+            {% if products %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>Nom</th>
+                                <th>Prix</th>
+                                <th>Stock</th>
+                                <th>Catégorie</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in products %}
+                            <tr>
+                                <td>
+                                    {% if product.image %}
+                                        <img src="{{ product.image.url }}" alt="{{ product.name }}" 
+                                             class="rounded" style="width: 50px; height: 50px; object-fit: cover;">
+                                    {% else %}
+                                        <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                             style="width: 50px; height: 50px;">
+                                            <i class="fas fa-image text-muted"></i>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'product_detail' product.id %}">{{ product.name }}</a>
+                                </td>
+                                <td>{{ product.price }} CFA</td>
+                                <td>
+                                    {% if product.stock > 0 %}
+                                        <span class="badge bg-success">{{ product.stock }}</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Rupture</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ product.category.name }}</td>
+                                <td>
+                                    {% if product.is_active %}
+                                        <span class="badge bg-success">Actif</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inactif</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'product_edit' product.id %}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'product_delete' product.id %}" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Vous n'avez pas encore ajouté de produits.
+                    <a href="{% url 'product_create' %}" class="alert-link">Ajouter votre premier produit</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

@@ -1,0 +1,272 @@
+================================================================
+    🔍 TEST DE LA CONFIRMATION - GUIDE COMPLET
+================================================================
+
+Suivez ces étapes pour tester la confirmation des commandes :
+
+
+================================================================
+ÉTAPE 1 : PRÉPARER UNE COMMANDE DE TEST
+================================================================
+
+A. SE CONNECTER COMME CLIENT :
+   
+   1. Allez sur : http://127.0.0.1:8000/
+   2. Cliquez sur "Connexion"
+   3. Entrez : client1 / client123
+   4. Cliquez "Se connecter"
+
+B. AJOUTER DES PRODUITS AU PANIER :
+   
+   1. Cliquez sur "Tous les Produits"
+   2. Choisissez un produit
+   3. Cliquez "Ajouter au panier"
+   4. Répétez pour 2-3 produits
+
+C. PASSER LA COMMANDE :
+   
+   1. Cliquez sur "Panier" dans la navbar
+   2. Cliquez sur "Passer la commande"
+   3. Remplissez l'adresse
+   4. Cliquez "Confirmer la commande"
+   5. Notez le numéro de commande (ex: #4)
+
+D. SE DÉCONNECTER :
+   
+   1. Menu utilisateur → "Déconnexion"
+
+
+================================================================
+ÉTAPE 2 : SE CONNECTER COMME VENDEUR
+================================================================
+
+1. Cliquez sur "Connexion"
+2. Entrez : vendeur1 / vendeur123
+3. Cliquez "Se connecter"
+
+
+================================================================
+ÉTAPE 3 : ACCÉDER À LA GESTION DES COMMANDES
+================================================================
+
+1. Dans la navbar, cliquez sur "Espace Vendeur"
+2. Vous arrivez sur le Dashboard
+3. Cliquez sur le bouton "Commandes" (bouton bleu en haut)
+4. Vous arrivez sur : /vendeur/commandes/
+
+
+================================================================
+ÉTAPE 4 : TESTER LA CONFIRMATION RAPIDE
+================================================================
+
+Vous devriez voir un tableau avec vos commandes :
+
+┌───────────────────────────────────────────────────────┐
+│ N° │ Client │ Date │ Statut │ Total │ Actions        │
+├───────────────────────────────────────────────────────┤
+│ #4 │ Marie  │ ... │ 🟡 En attente │ 150€ │ [👁️] [✓] │
+└───────────────────────────────────────────────────────┘
+
+TEST :
+1. Trouvez la commande créée (ex: #4)
+2. Son statut doit être "En attente" (badge jaune)
+3. Dans la colonne Actions, vous voyez : [👁️] [✓]
+4. Cliquez sur le bouton VERT [✓]
+5. La page se recharge
+6. Le statut devient "Confirmée" (badge bleu)
+7. Message vert apparaît en haut
+
+
+SI LE BOUTON N'APPARAÎT PAS :
+   → Le statut n'est pas "pending"
+   → Vérifiez le statut dans /admin/
+
+SI LE CLIC NE FAIT RIEN :
+   → Faites F12 → Onglet Console
+   → Regardez s'il y a des erreurs
+   → Faites F12 → Onglet Réseau
+   → Cliquez à nouveau
+   → Voyez la requête POST
+
+
+================================================================
+ÉTAPE 5 : TESTER DEPUIS LA PAGE DÉTAILS
+================================================================
+
+1. Dans la liste, cliquez sur [👁️] (icône œil)
+2. Vous arrivez sur la page détails
+3. À DROITE, vous voyez une card orange "Gestion du Statut"
+4. Dedans, des grands boutons selon le statut
+
+SI STATUT = "EN ATTENTE" :
+   Vous voyez :
+   [🟢 Confirmer la Commande]
+   [🔴 Annuler]
+
+SI STATUT = "CONFIRMÉE" :
+   Vous voyez :
+   [🔵 Marquer comme Expédiée]
+   [🔴 Annuler]
+
+SI STATUT = "EXPÉDIÉE" :
+   Vous voyez :
+   [🟢 Marquer comme Livrée]
+
+TEST :
+1. Cliquez sur le bouton principal (ex: Confirmer)
+2. La page se recharge
+3. Le statut change
+4. La timeline se met à jour (icône devient verte)
+5. Message de succès en haut
+
+
+================================================================
+MESSAGES QUI DOIVENT APPARAÎTRE
+================================================================
+
+APRÈS CONFIRMATION :
+✅ Statut de la commande #4 mis à jour : En attente → Confirmée
+
+APRÈS EXPÉDITION :
+🚚 Statut de la commande #4 mis à jour : Confirmée → Expédiée
+
+APRÈS LIVRAISON :
+🎉 Statut de la commande #4 mis à jour : Expédiée → Livrée
+
+
+================================================================
+SI ÇA NE FONCTIONNE TOUJOURS PAS
+================================================================
+
+OPTION 1 - Vérifier dans l'Admin :
+
+1. Allez sur : http://127.0.0.1:8000/admin/
+2. Connectez-vous : admin / admin123
+3. Shop → Orders (Commandes)
+4. Cliquez sur une commande
+5. Changez le statut manuellement
+6. Sauvegardez
+7. Retournez sur /vendeur/commandes/
+8. Vérifiez que le statut est mis à jour
+
+OPTION 2 - Créer une Nouvelle Commande :
+
+1. Déconnectez-vous
+2. Connectez-vous comme client1
+3. Achetez des produits du vendeur1
+4. Passez la commande
+5. Déconnectez-vous
+6. Connectez-vous comme vendeur1
+7. Dashboard → Commandes
+8. Testez la confirmation
+
+
+OPTION 3 - Vérifier les Logs :
+
+Dans le terminal où tourne le serveur, regardez
+s'il y a des erreurs quand vous cliquez sur les boutons.
+
+
+================================================================
+CODE À VÉRIFIER
+================================================================
+
+DANS shop/views.py - Ligne ~415 :
+
+La fonction seller_order_update_status doit :
+   1. Vérifier que c'est un vendeur
+   2. Récupérer la commande
+   3. Vérifier que la commande a des produits du vendeur
+   4. Récupérer le nouveau statut du POST
+   5. Valider le statut
+   6. Sauvegarder
+   7. Afficher un message
+   8. Rediriger
+
+DANS shop/urls.py - Ligne ~35 :
+
+La route doit être :
+   path('vendeur/commande/<int:pk>/statut/', 
+        views.seller_order_update_status, 
+        name='seller_order_update_status'),
+
+
+================================================================
+DIAGNOSTIC RAPIDE
+================================================================
+
+Exécutez dans le terminal :
+
+cd "c:\Users\HP OMEN 16\ecom_rich"
+.\env\Scripts\python.exe manage.py shell
+
+Puis dans le shell Python :
+
+from shop.models import Order, User
+
+# Vérifier les commandes
+orders = Order.objects.all()
+print(f"Total commandes : {orders.count()}")
+
+for order in orders:
+    print(f"Commande #{order.id} - Statut: {order.status}")
+
+# Vérifier le vendeur
+vendeur = User.objects.get(username='vendeur1')
+print(f"Vendeur : {vendeur.username} - Type: {vendeur.user_type}")
+
+# Vérifier les produits du vendeur dans les commandes
+from shop.models import OrderItem
+items = OrderItem.objects.filter(product__seller=vendeur)
+print(f"Items vendus : {items.count()}")
+
+for item in items:
+    print(f"  Commande #{item.order.id} - Produit: {item.product.name}")
+
+
+================================================================
+TEST MANUEL DE CHANGEMENT DE STATUT
+================================================================
+
+Dans le shell Python :
+
+from shop.models import Order
+
+# Récupérer une commande
+order = Order.objects.get(pk=1)
+print(f"Statut actuel : {order.status}")
+
+# Changer le statut
+order.status = 'confirmed'
+order.save()
+
+# Vérifier
+print(f"Nouveau statut : {order.status}")
+print(f"Nom affichable : {order.get_status_display()}")
+
+
+================================================================
+SI VOUS VOYEZ DES ERREURS DANS LE TERMINAL
+================================================================
+
+Copiez les erreurs et envoyez-les moi pour que je puisse
+vous aider à résoudre le problème spécifique.
+
+
+================================================================
+VÉRIFICATION FINALE
+================================================================
+
+Pour que la confirmation fonctionne, il faut :
+
+[✓] Être connecté comme vendeur
+[✓] Avoir des commandes avec vos produits
+[✓] Voir le bouton ✓ à côté de la commande
+[✓] CSRF token présent dans le formulaire
+[✓] Serveur Django qui tourne
+
+Si tout est OK, le clic devrait fonctionner !
+
+
+================================================================
+

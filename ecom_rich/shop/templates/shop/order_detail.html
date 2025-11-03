@@ -1,0 +1,105 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}Commande #{{ order.id }} - E-Commerce{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'order_list' %}">Mes commandes</a></li>
+            <li class="breadcrumb-item active">Commande #{{ order.id }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Commande #{{ order.id }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong>Date:</strong> {{ order.created_at|date:"d/m/Y H:i" }}</p>
+                            <p><strong>Statut:</strong> 
+                                <span class="badge bg-{% if order.status == 'pending' %}warning{% elif order.status == 'confirmed' %}info{% elif order.status == 'shipped' %}primary{% elif order.status == 'delivered' %}success{% else %}danger{% endif %}">
+                                    {{ order.get_status_display }}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Téléphone:</strong> {{ order.phone }}</p>
+                            <p><strong>Adresse de livraison:</strong><br>{{ order.shipping_address|linebreaks }}</p>
+                        </div>
+                    </div>
+
+                    {% if order.notes %}
+                    <div class="alert alert-secondary">
+                        <strong>Notes:</strong> {{ order.notes }}
+                    </div>
+                    {% endif %}
+
+                    <h6 class="mt-4 mb-3">Articles commandés</h6>
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Produit</th>
+                                <th>Prix unitaire</th>
+                                <th>Quantité</th>
+                                <th>Sous-total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order.items.all %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'product_detail' item.product.id %}">
+                                        {{ item.product.name }}
+                                    </a>
+                                </td>
+                                <td>{{ item.price }} CFA</td>
+                                <td>{{ item.quantity }}</td>
+                                <td><strong>{{ item.get_subtotal }} CFA</strong></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="3" class="text-end">Total:</th>
+                                <th class="text-primary">{{ order.total_amount }} CFA</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Suivi de commande</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item {% if order.status == 'pending' %}bg-warning bg-opacity-25{% endif %}">
+                            <i class="fas fa-clock"></i> En attente
+                        </div>
+                        <div class="list-group-item {% if order.status == 'confirmed' %}bg-info bg-opacity-25{% endif %}">
+                            <i class="fas fa-check"></i> Confirmée
+                        </div>
+                        <div class="list-group-item {% if order.status == 'shipped' %}bg-primary bg-opacity-25{% endif %}">
+                            <i class="fas fa-truck"></i> Expédiée
+                        </div>
+                        <div class="list-group-item {% if order.status == 'delivered' %}bg-success bg-opacity-25{% endif %}">
+                            <i class="fas fa-home"></i> Livrée
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

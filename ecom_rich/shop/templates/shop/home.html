@@ -1,0 +1,153 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}Accueil - E-Commerce{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <div class="jumbotron p-5 rounded mb-5 fade-in">
+        <h1 class="display-3">🛍️ Bienvenue sur ShopMania !</h1>
+        <p class="lead">La meilleure plateforme e-commerce pour acheter et vendre en ligne</p>
+        <hr class="my-4" style="background: rgba(255,255,255,0.3); height: 3px; border: none;">
+        <p class="fs-5">✨ Des milliers de produits • 🚚 Livraison rapide • 💳 Paiement sécurisé</p>
+        <div class="mt-4 d-flex gap-3 flex-wrap">
+            <a class="btn btn-primary btn-lg shine pulse" href="{% url 'product_list' %}" role="button">
+                <i class="fas fa-shopping-bag me-2"></i> Découvrir les Produits
+            </a>
+            {% if not user.is_authenticated %}
+                <a class="btn btn-warning btn-lg shine" href="{% url 'register' %}" role="button">
+                    <i class="fas fa-rocket me-2"></i> Devenir Vendeur
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Categories -->
+    {% if categories %}
+    <div class="mb-5">
+        <h2 class="mb-4 gradient-text text-center">🎯 Explorez nos Catégories</h2>
+        <div class="row g-4">
+            {% for category in categories %}
+            <div class="col-lg-2 col-md-4 col-sm-6 mb-3 fade-in-scale">
+                <a href="{% url 'product_list' %}?category={{ category.id }}" class="text-decoration-none">
+                    <div class="card category-card cat-{{ forloop.counter }} h-100">
+                        <div class="card-body text-center">
+                            {% if forloop.counter == 1 %}
+                                <i class="fas fa-laptop"></i>
+                            {% elif forloop.counter == 2 %}
+                                <i class="fas fa-tshirt"></i>
+                            {% elif forloop.counter == 3 %}
+                                <i class="fas fa-home"></i>
+                            {% elif forloop.counter == 4 %}
+                                <i class="fas fa-futbol"></i>
+                            {% else %}
+                                <i class="fas fa-book"></i>
+                            {% endif %}
+                            <h5 class="card-title mb-0">{{ category.name }}</h5>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Products -->
+    <h2 class="mb-4 gradient-text text-center">🔥 Produits Tendance</h2>
+    {% if products %}
+        <div class="row g-4">
+            {% for product in products %}
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4 fade-in">
+                <div class="card h-100 hover-card">
+                    <div style="overflow: hidden; border-radius: 0.75rem 0.75rem 0 0;">
+                        {% if product.image %}
+                            <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                            <div class="card-img-top image-placeholder d-flex align-items-center justify-content-center" style="height: 200px;">
+                                <i class="fas fa-image fa-3x text-muted"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ product.name|truncatewords:5 }}</h5>
+                        <p class="card-text text-muted small flex-grow-1">{{ product.description|truncatewords:10 }}</p>
+                        
+                        <!-- Étiquettes -->
+                        <div class="mb-2">
+                            {% for tag in product.tags.all %}
+                                {% if tag.name == 'Nouveau' %}
+                                    <span class="badge" style="background: linear-gradient(135deg, #ff6b6b 0%, #ff8787 100%);">
+                                        <i class="fas fa-sparkles me-1"></i>{{ tag.name }}
+                                    </span>
+                                {% elif tag.name == 'Promotion' %}
+                                    <span class="badge" style="background: linear-gradient(135deg, #fed330 0%, #f7b731 100%); color: #2d3436;">
+                                        <i class="fas fa-percent me-1"></i>{{ tag.name }}
+                                    </span>
+                                {% elif tag.name == 'Populaire' %}
+                                    <span class="badge" style="background: linear-gradient(135deg, #a55eea 0%, #8854d0 100%);">
+                                        <i class="fas fa-fire me-1"></i>{{ tag.name }}
+                                    </span>
+                                {% elif tag.name == 'Écologique' or tag.name == 'Ecologique' %}
+                                    <span class="badge" style="background: linear-gradient(135deg, #26de81 0%, #20bf6b 100%);">
+                                        <i class="fas fa-leaf me-1"></i>{{ tag.name }}
+                                    </span>
+                                {% elif tag.name == 'Premium' %}
+                                    <span class="badge" style="background: linear-gradient(135deg, #ff9f43 0%, #ff6348 100%);">
+                                        <i class="fas fa-crown me-1"></i>{{ tag.name }}
+                                    </span>
+                                {% elif tag.name == 'Soldes' %}
+                                    <span class="badge" style="background: linear-gradient(135deg, #fc5c65 0%, #eb3b5a 100%);">
+                                        <i class="fas fa-tag me-1"></i>{{ tag.name }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge" style="background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);">
+                                        <i class="fas fa-tag me-1"></i>{{ tag.name }}
+                                    </span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mb-2">
+                            <h4 class="mb-0 text-primary">{{ product.price }} CFA</h4>
+                        </div>
+                        <p class="card-text small mb-0">
+                            <i class="fas fa-user text-muted"></i> {{ product.seller.username }}
+                        </p>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 pt-0">
+                        <a href="{% url 'product_detail' product.id %}" class="btn btn-primary btn-sm w-100 shine">
+                            <i class="fas fa-eye"></i> Voir détails
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-5">
+            <a href="{% url 'product_list' %}" class="btn btn-outline-primary btn-lg shine">
+                Voir tous les produits <i class="fas fa-arrow-right ms-2"></i>
+            </a>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-box-open"></i>
+            <h5>Aucun produit disponible pour le moment</h5>
+            <p class="text-muted">Revenez bientôt pour découvrir nos nouveaux produits !</p>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.hover-shadow {
+    transition: all 0.3s;
+}
+.hover-shadow:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+</style>
+{% endblock %}
+
+

@@ -1,0 +1,95 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}Mes Commandes - E-Commerce{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="mb-5 fade-in">
+        <h2 class="mb-1"><i class="fas fa-box-open text-primary"></i> Mes Commandes</h2>
+        <p class="text-muted">Suivez l'état de vos commandes et consultez votre historique d'achats</p>
+    </div>
+
+    {% if orders %}
+        <div class="row g-4">
+            {% for order in orders %}
+            <div class="col-12 fade-in">
+                <div class="card shadow-sm hover-shadow">
+                    <div class="card-header d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, rgba(255, 107, 107, 0.1) 0%, rgba(255, 135, 135, 0.1) 100%); border-left: 4px solid;">
+                        <div>
+                            <strong class="text-primary fs-5">
+                                <i class="fas fa-receipt me-2"></i> Commande #{{ order.id }}
+                            </strong>
+                            <span class="ms-3">
+                                {% if order.status == 'pending' %}
+                                    <span class="badge" style="background: linear-gradient(135deg, #fed330 0%, #f7b731 100%);">
+                                        <i class="fas fa-clock me-1"></i> {{ order.get_status_display }}
+                                    </span>
+                                {% elif order.status == 'confirmed' %}
+                                    <span class="badge" style="background: linear-gradient(135deg, #45aaf2 0%, #2d98da 100%);">
+                                        <i class="fas fa-check me-1"></i> {{ order.get_status_display }}
+                                    </span>
+                                {% elif order.status == 'shipped' %}
+                                    <span class="badge" style="background: linear-gradient(135deg, #a55eea 0%, #8854d0 100%);">
+                                        <i class="fas fa-truck me-1"></i> {{ order.get_status_display }}
+                                    </span>
+                                {% elif order.status == 'delivered' %}
+                                    <span class="badge" style="background: linear-gradient(135deg, #26de81 0%, #20bf6b 100%);">
+                                        <i class="fas fa-check-double me-1"></i> {{ order.get_status_display }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary">
+                                        <i class="fas fa-times me-1"></i> {{ order.get_status_display }}
+                                    </span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="text-muted">
+                            <i class="fas fa-calendar-alt me-1"></i>
+                            {{ order.created_at|date:"d/m/Y H:i" }}
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h6 class="text-muted text-uppercase small mb-3">
+                                    <i class="fas fa-shopping-bag me-2"></i> Articles commandés
+                                </h6>
+                                <ul class="list-unstyled">
+                                    {% for item in order.items.all %}
+                                    <li class="mb-2 p-2 bg-light rounded">
+                                        <i class="fas fa-box-open text-primary"></i>
+                                        <strong>{{ item.quantity }}</strong> x {{ item.product.name }}
+                                        <span class="text-muted">- {{ item.price }} CFA</span>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div class="mb-3">
+                                    <small class="text-muted text-uppercase d-block mb-2">Total</small>
+                                    <h3 class="text-primary mb-0">{{ order.total_amount }} CFA</h3>
+                                </div>
+                                <a href="{% url 'order_detail' order.id %}" class="btn btn-primary btn-lg w-100 shine">
+                                    <i class="fas fa-eye me-2"></i> Voir les Détails
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-shopping-bag"></i>
+            <h5 class="mt-3">Aucune commande pour le moment</h5>
+            <p class="text-muted mb-4">Vous n'avez pas encore passé de commande.</p>
+            <a href="{% url 'product_list' %}" class="btn btn-primary btn-lg shine">
+                <i class="fas fa-shopping-bag me-2"></i> Découvrir nos Produits
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+
